@@ -28,6 +28,7 @@ public class WeatherDataService implements WeatherDataServiceInterface{
 
     @Override
     public WeatherDataResponseDto getWeather(String lat, String lon) {
+
         return null;
     }
 
