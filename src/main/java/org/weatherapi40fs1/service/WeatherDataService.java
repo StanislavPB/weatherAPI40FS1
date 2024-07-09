@@ -1,11 +1,14 @@
 package org.weatherapi40fs1.service;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.weatherapi40fs1.dto.WeatherDataResponseDto;
 import org.weatherapi40fs1.entity.WeatherDataEntity;
 import org.weatherapi40fs1.repository.WeatherRepository;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -27,34 +30,34 @@ public class WeatherDataService implements WeatherDataServiceInterface{
     private final OutWeatherApi outWeatherApi;
 
     @Override
-    public WeatherDataResponseDto getWeather(String lat, String lon) {
+    @SneakyThrows
+    public WeatherDataResponseDto getWeather(String lat, String lon)  {
 
-//        Optional<WeatherDataEntity> optEntity = getFromDatabase(lat,lon);
-//
-//        if (optEntity.isPresent()){
-//            WeatherDataEntity weatherDataEntity = optEntity.get();
-//            LocalDateTime createdTime = weatherDataEntity.getTimeCreate();
-//
-//            long duration = Duration.between(LocalDateTime.now(), createdTime).toMinutes();
-//
-//            if (duration < 10) {
-//                return converter.fromEntityToDto(weatherDataEntity);
-//            }
-//        }
-//
-//        WeatherDataResponseDto response = getFromApi(lat,lon);
-//        repository.save(converter.fromDtoToEntity(response));
-//
-//        return response;
+        Optional<WeatherDataEntity> optEntity = getFromDatabase(lat,lon);
 
-        return getFromDatabase(lat,lon)
-                .filter(entity -> Duration.between(LocalDateTime.now(), entity.getTimeCreate()).toMinutes() < 10)
-                .map(converter::fromEntityToDto)
-                .orElseGet(() -> {
-                    WeatherDataResponseDto response = getFromApi(lat,lon);
-                    repository.save(converter.fromDtoToEntity(response));
-                    return response;
-                });
+        if (optEntity.isPresent()){
+            WeatherDataEntity weatherDataEntity = optEntity.get();
+            LocalDateTime createdTime = weatherDataEntity.getTimeCreate();
+
+            long duration = Duration.between(LocalDateTime.now(), createdTime).toMinutes();
+
+            if (duration < 10) {
+                return converter.fromEntityToDto(weatherDataEntity);
+            }
+        }
+
+    WeatherDataResponseDto response = getFromApi(lat, lon);
+    repository.save(converter.fromDtoToEntity(response));
+        return response;
+
+//        return getFromDatabase(lat,lon)
+//                .filter(entity -> Duration.between(LocalDateTime.now(), entity.getTimeCreate()).toMinutes() < 10)
+//                .map(converter::fromEntityToDto)
+//                .orElseGet(() -> {
+//                    WeatherDataResponseDto response = getFromApi(lat,lon);
+//                    repository.save(converter.fromDtoToEntity(response));
+//                    return response;
+//                });
 
     }
 
@@ -63,7 +66,7 @@ public class WeatherDataService implements WeatherDataServiceInterface{
     }
 
 
-    private WeatherDataResponseDto getFromApi(String lat, String lon){
+    private WeatherDataResponseDto getFromApi(String lat, String lon) throws MalformedURLException, URISyntaxException {
         return outWeatherApi.receivedFromWeatherApi(lat,lon);
     }
 
