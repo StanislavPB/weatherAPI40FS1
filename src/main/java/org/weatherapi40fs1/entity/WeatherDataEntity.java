@@ -22,6 +22,6 @@ public class WeatherDataEntity {
     private String longitude;
     private String temperature;
 
-    @Column(name = "create")
+    @Column(name = "'create'")
     private LocalDateTime timeCreate;
 }
