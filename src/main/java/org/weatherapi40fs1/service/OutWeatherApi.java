@@ -3,16 +3,20 @@ package org.weatherapi40fs1.service;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.weatherapi40fs1.dto.WeatherDataResponseDto;
 import org.weatherapi40fs1.dto.weatherJsonDataModel.WeatherJSON;
+import org.weatherapi40fs1.service.postExample.RequestObj;
+import org.weatherapi40fs1.service.postExample.ResponseObj;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 
 @Service
 @AllArgsConstructor
@@ -51,5 +55,39 @@ public class OutWeatherApi {
                 .queryParam("key","37195ad08f4d48b98708b260b3747f6e")
                 .build()
                 .toString();
+    }
+
+    private void sendPostRequest() throws MalformedURLException {
+
+        String urlRequest ="http://mysite.com/api/resorce";
+        URL url = new URL(urlRequest);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        RequestObj requestObj = new RequestObj("str1","str2");
+
+        HttpEntity<RequestObj> entity = new HttpEntity<>(requestObj, headers);
+
+//        try {
+//            ResponseEntity<ResponseObj> response = restTemplate.postForEntity(url.toURI(), entity, ResponseObj.class);
+//        } catch (URISyntaxException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        try {
+            ResponseEntity<ResponseObj> response = restTemplate.exchange(urlRequest, HttpMethod.POST, entity, ResponseObj.class);
+            log.info("Received response: {}", response);
+
+            if (response.getBody() != null) {
+                log.info("Success! Response body: {}", response.getBody());
+                // что делаем с этим ответом
+            } else {
+                log.warn("No content in response body");
+            }
+        } catch (HttpClientErrorException exception){
+            log.error("Error response from API: {}", exception.getResponseBodyAsString());
+        }
+
     }
 }
